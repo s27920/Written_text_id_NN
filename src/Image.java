@@ -15,3 +15,21 @@ public class Image {
         return label;
     }
 }
+
+//public class Image<T> {
+//    private final T[] pixelVector;
+//    private final T label;
+//
+//    public Image(T[] pixelVector, T label) {
+//        this.pixelVector = pixelVector;
+//        this.label = label;
+//    }
+//
+//    public T[] getPixels() {
+//        return pixelVector;
+//    }
+//
+//    public T getNumVal() {
+//        return label;
+//    }
+//}
