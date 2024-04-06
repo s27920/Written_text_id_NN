@@ -1,0 +1,15 @@
+//    private void build(){
+//        Perceptron perceptron = new Perceptron(new byte[784]);
+//        Perceptron.createSuccessors(perceptron, structure, 1);
+//        System.out.println(Perceptron.objectCounter);
+//    }
+
+
+//    public static void createSuccessors(Perceptron builder, int[] structure, int index){
+//        if(index < structure.length){
+//            for (int i = 1; i < structure[index]; i++) {
+//                builder.successor[i] = new Perceptron(new byte[structure[i-1]]);
+//            }
+//            createSuccessors(builder.successor[0], structure, index+1);
+//        }
+//

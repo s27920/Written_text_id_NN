@@ -6,18 +6,19 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
-public class Parser {
+public class IDXParser implements Parseable {
     //imageFilePath = "t10k-images.idx3-ubyte" by default
     //labelFilePath = "t10k-labels.idx1-ubyte" by default
     Path imageFile;
     Path labelFile;
 
-    public Parser(String imageFilePath, String labelFilePath) {
+    public IDXParser(String imageFilePath, String labelFilePath) {
         imageFile = Paths.get(imageFilePath);
         labelFile = Paths.get(labelFilePath);
     }
 
-    private void parse(Flags flags){
+    public void parse(){
+        Flags flags = getFlags();
         try (FileChannel imageChannel = FileChannel.open(imageFile, StandardOpenOption.READ);
              FileChannel labelChannel = FileChannel.open(labelFile, StandardOpenOption.READ)) {
             long imagePosition = 16;
@@ -62,7 +63,7 @@ public class Parser {
         }
     }
 
-    public void run(){
+    private Flags getFlags(){
         try(FileChannel flagChannel = FileChannel.open(imageFile, StandardOpenOption.READ)) {
             ByteBuffer flagBuffer = ByteBuffer.allocateDirect(16);
             flagChannel.read(flagBuffer);
@@ -70,7 +71,7 @@ public class Parser {
             int imageCount = (int) (flagVector[4] * Math.pow(256,3) + flagVector[5] * Math.pow(256,2)+ flagVector[6] * Math.pow(256,1)+ flagVector[7]);
             int dimX = (int) (flagVector[8] * Math.pow(256,3) + flagVector[9] * Math.pow(256,2)+ flagVector[10] * Math.pow(256,1)+ flagVector[11]);
             int dimY = (int) (flagVector[12] * Math.pow(256,3) + flagVector[13] * Math.pow(256,2)+ flagVector[14] * Math.pow(256,1)+ flagVector[15]);
-            parse(new Flags(dimX, dimY, imageCount));
+            return new Flags(dimX, dimY, imageCount);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -79,7 +80,7 @@ public class Parser {
         private final int sizeX;
         private final int sizeY;
         private final int imageCount;
-        public Flags(int sizeX, int sizeY, int imageCount) {
+        private Flags(int sizeX, int sizeY, int imageCount) {
             this.sizeX = sizeX;
             this.sizeY = sizeY;
             this.imageCount = imageCount;
