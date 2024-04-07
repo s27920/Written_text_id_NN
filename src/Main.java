@@ -1,11 +1,13 @@
-import java.util.Arrays;
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        //imageFilePath = "t10k-images.idx3-ubyte" by default
-        //labelFilePath = "t10k-labels.idx1-ubyte" by default
-        IDXParser parser = new IDXParser("t10k-images.idx3-ubyte", "t10k-labels.idx1-ubyte");
+        String imageFilePath10k = "t10k-images.idx3-ubyte"; //by default
+        String labelFilePath10k = "t10k-labels.idx1-ubyte"; //by default
+        String imageFilePath60k = "train-images.idx3-ubyte";
+        String labelFilePath60k = "train-labels.idx1-ubyte";
+
+        IDXParser parser = new IDXParser(imageFilePath10k, labelFilePath10k);
         Network network = new Network(new int[]{784,16,16,10});
 
         List<Image> imageList = parser.parse();
@@ -14,6 +16,7 @@ public class Main {
         System.out.println("Perceptron count: " + Perceptron.objectCounter);
         System.out.println("Connection count: " + Perceptron.connectionCounter);
 
-        network.run(imageList, 0);
+        System.out.println((network.run(imageList, 0)));
+
     }
 }

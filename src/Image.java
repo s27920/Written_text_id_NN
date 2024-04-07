@@ -1,5 +1,3 @@
-import java.util.Arrays;
-
 public class Image {
     private final byte[] pixelVector;
     private final byte label;
@@ -31,5 +29,3 @@ public class Image {
         return String.valueOf(stringBuilder);
     }
 }
-
-

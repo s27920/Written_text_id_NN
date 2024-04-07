@@ -14,22 +14,22 @@ public class Network {
         this.initLayer = layers[0];
         this.terminalLayer = layers[1];
     }
-    public void run(List<Image> imagesToClassify, int index){
+    public int run(List<Image> imagesToClassify, int index){
         int length = imagesToClassify.size();
-        float[] activations = getActivations(imagesToClassify.get(index));
-        train(activations);
-        System.out.println("value guessed: " + classify(activations) + " actual value: " + currentLabel);
-        System.out.println(Arrays.toString(activations));
-        index+=1;
-        if(index < length) {
-            run(imagesToClassify, index);
+        while (index < length){
+            float[] activations = getActivations(imagesToClassify.get(index));
+            train(activations);
+            System.out.println("value guessed: " + classify(activations) + " actual value: " + currentLabel + " for activations ");
+            System.out.println(Arrays.toString(activations));
+            index+=1;
         }
+        return index;
     }
 
     public float[] getActivations(Image imageToClassify){
         byte[] pixelVector = imageToClassify.getPixels();
         for (int i = 0; i < initLayer.length; i++) {
-            initLayer[i].setInputs(new float[]{(float) (pixelVector[i]/128.0)});
+            initLayer[i].setInputs(new float[]{(float) ((pixelVector[i] & 0xFF)/256.0)});
         }
         Perceptron tmp = initLayer[0];
         Perceptron[] successors = null;
@@ -51,23 +51,53 @@ public class Network {
     public void train(float[] activations){
         float[] correct = new float[10];
         correct[currentLabel] = 1.0f;
-        Perceptron[] layer = terminalLayer;
+
+        Perceptron[] currLayer = terminalLayer;
         Perceptron[] prevLayer;
-        while ((prevLayer = layer[0].predecessor)!=null){
-            int length = prevLayer.length;
-            System.out.println(layer.length);
-            for (int i = 0; i < layer.length; i++) {
-                float activation = activations[i];
-                float errorGradient = correct[i] - activation;
-                for (int j = 0; j < length; j++) {
-                    prevLayer[j].getWeights()[i] += prevLayer[j].getOutput() * errorGradient * (1 - activation*activation);
+
+        float[] sucErrorGradient = null;
+
+        while ((prevLayer = currLayer[0].predecessor)!=null){
+            int currentLength = currLayer.length;
+            if(currLayer == terminalLayer){
+                sucErrorGradient = new float[currentLength];
+                for (int i = 0; i < currentLength; i++) {
+                    float[] tmpWeights = currLayer[i].getWeights();
+                    float activation = activations[i];
+                    float errorGradient = (correct[i] - activation);
+                    float output = currLayer[i].getOutput();
+                    float change = activation * errorGradient * ((2 / (1 + (output * output))) - 1);
+                    sucErrorGradient[i] = change;
+                    for (int j = 0; j < currentLength; j++) {
+                        tmpWeights[j]+=change;
+                    }
+                    currLayer[i].setWeights(tmpWeights);
                 }
-            }
-            activations = new float[length];
-            for (int i = 0; i < length; i++) {
-                activations[i]=prevLayer[i].getOutput();
-            }
-            layer=prevLayer;
+            }else{
+                Perceptron[] sucLayer = currLayer[0].successor;
+                float[] tmpErrorGradient = new float[currentLength];
+                for (int i = 0; i < currentLength; i++) {
+                    for (int j = 0; j < sucLayer.length; j++) {
+                        float[] sucWeights = sucLayer[j].getWeights();
+                        for (int k = 0; k < currentLength; k++) {
+//                            System.out.println("error gradient: "+ sucErrorGradient[j]);
+//                            System.out.println("weight: " + sucWeights[k]);
+                            tmpErrorGradient[i] += sucErrorGradient[j] * sucWeights[k];
+                        }
+//                        System.out.println();
+                    }
+                }
+                for (int i = 0; i < currentLength; i++) {
+                    float[] weights = currLayer[i].getWeights();
+                    for (int j = 0; j < weights.length; j++) {
+                        weights[j] += tmpErrorGradient[i];
+                    }
+                    currLayer[i].setWeights(weights);
+                }
+                sucErrorGradient = tmpErrorGradient.clone();
+
+                }
+            currLayer=prevLayer;
         }
     }
 
@@ -85,7 +115,7 @@ public class Network {
         }
         Perceptron[] terminalLayer = hiddenLayers(structure, initLayer, 1);
 
-        return new Perceptron[][]{initLayer, terminalLayer} ;
+        return new Perceptron[][]{initLayer, terminalLayer};
     }
     private Perceptron[] hiddenLayers(int[] structure, Perceptron[] previousLayer, int index){
         int currLayerSize = structure[index];

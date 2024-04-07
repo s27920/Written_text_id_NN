@@ -53,3 +53,46 @@ float[] getESquared(float[] activations){
         }
         return cost;
     }
+
+
+    User
+    public void train(float[] activations){
+            float[] correct = new float[10];
+            correct[currentLabel] = 1.0f;
+            Perceptron[] layer = terminalLayer;
+            Perceptron[] prevLayer;
+            Perceptron[] sucLayer;
+            float[] prevErrorGradients = null;
+            while ((prevLayer = layer[0].predecessor)!=null){
+                int prevLayerSize = prevLayer.length;
+                int currLayerSize = layer.length;
+                float[] tmpErrorGradients = new float[currLayerSize];
+                for (int i = 0; i < currLayerSize; i++) {
+                    float activation = activations[i];
+                    float errorGradient;
+                    if (layer == terminalLayer) {
+                        errorGradient = correct[i] - activation;
+                        tmpErrorGradients[i] = errorGradient;
+                    } else {
+                        sucLayer = layer[i].successor;
+                        float[] weights = sucLayer[i].getWeights();
+                        float weighedSum = 0.0f;
+                        for (int j = 0; j < sucLayer.length; j++) {
+                            weighedSum+= prevErrorGradients[j]
+                                    * weights[j];
+                        }
+                        errorGradient = weighedSum;
+                    }
+                    for (int j = 0; j < prevLayerSize; j++) {
+                        prevLayer[j].getWeights()[i] += prevLayer[j].getOutput() * errorGradient * (1 - activation*activation);
+                    }
+                    tmpErrorGradients[i] = errorGradient;
+                }
+                prevErrorGradients = tmpErrorGradients;
+                activations = new float[prevLayerSize];
+                for (int i = 0; i < prevLayerSize; i++) {
+                    activations[i]=prevLayer[i].getOutput();
+                }
+                layer=prevLayer;
+            }
+        }

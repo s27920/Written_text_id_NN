@@ -6,11 +6,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class IDXParser implements Parseable {
-    //imageFilePath = "t10k-images.idx3-ubyte" by default
-    //labelFilePath = "t10k-labels.idx1-ubyte" by default
+
     Path imageFile;
     Path labelFile;
 
@@ -24,6 +24,7 @@ public class IDXParser implements Parseable {
     public List<Image> parse(){
         List<Image> toReturn = new ArrayList<>();
         Flags flags = getFlags();
+
         try (FileChannel imageChannel = FileChannel.open(imageFile, StandardOpenOption.READ);
              FileChannel labelChannel = FileChannel.open(labelFile, StandardOpenOption.READ)) {
             long imagePosition = 16;
@@ -49,7 +50,6 @@ public class IDXParser implements Parseable {
                 }
                 labelBuffer.flip();
                 byte label = labelBuffer.get();
-                //potentially passed onto a shared resource idk yet
                 Image image = new Image(pixelVector, label);
                 toReturn.add(image);
 
@@ -58,7 +58,6 @@ public class IDXParser implements Parseable {
                 pixelBuffer.clear();
                 labelBuffer.clear();
             }
-            System.out.println("done ");
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
@@ -72,10 +71,18 @@ public class IDXParser implements Parseable {
         try(FileChannel flagChannel = FileChannel.open(imageFile, StandardOpenOption.READ)) {
             ByteBuffer flagBuffer = ByteBuffer.allocateDirect(16);
             flagChannel.read(flagBuffer);
-            byte[] flagVector = newArray(flagBuffer);
-            int imageCount = (int) (flagVector[4] * Math.pow(256,3) + flagVector[5] * Math.pow(256,2)+ flagVector[6] * Math.pow(256,1)+ flagVector[7]);
+            byte[] signedFlagVector = newArray(flagBuffer);
+            short[] flagVector = new short[signedFlagVector.length];
+
+            for (int i = 0; i < signedFlagVector.length; i++) {
+                flagVector[i] = toUnsigned(signedFlagVector[i]);
+            }
+            int imageCount = (int) (flagVector[4] * Math.pow(256,3) + flagVector[5] * Math.pow(256,2)+ (flagVector[6]) * Math.pow(256,1)+ flagVector[7]);
             int dimX = (int) (flagVector[8] * Math.pow(256,3) + flagVector[9] * Math.pow(256,2)+ flagVector[10] * Math.pow(256,1)+ flagVector[11]);
             int dimY = (int) (flagVector[12] * Math.pow(256,3) + flagVector[13] * Math.pow(256,2)+ flagVector[14] * Math.pow(256,1)+ flagVector[15]);
+            System.out.println("Image count: " + imageCount);
+            System.out.println("dimension X: " + dimX);
+            System.out.println("dimension Y: " + dimY);
             return new Flags(dimX, dimY, imageCount);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -89,5 +96,8 @@ public class IDXParser implements Parseable {
         byte[] toReturn = new byte[buffer.remaining()];
         buffer.get(toReturn);
         return toReturn;
+    }
+    public static short toUnsigned(byte b){
+        return (short) (b & 0xFF);
     }
 }
