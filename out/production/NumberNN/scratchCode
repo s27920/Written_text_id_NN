@@ -13,3 +13,43 @@
 //            createSuccessors(builder.successor[0], structure, index+1);
 //        }
 //
+
+
+//public static void setSucConnection(Perceptron curr, Perceptron suc){
+//    curr.successor[curr.sucIndex] = suc;
+//    suc.predecessor[suc.predIndex] = curr;
+//    curr.sucIndex++;
+//    suc.predIndex++;
+//}
+
+//public class Image<T> {
+//    private final T[] pixelVector;
+//    private final T label;
+//
+//    public Image(T[] pixelVector, T label) {
+//        this.pixelVector = pixelVector;
+//        this.label = label;
+//    }
+//
+//    public T[] getPixels() {
+//        return pixelVector;
+//    }
+//
+//    public T getNumVal() {
+//        return label;
+//    }
+//}
+
+float[] getESquared(float[] activations){
+        int length = activations.length;
+        float cost[] = new float[length];
+        float correct;
+        for (int i = 0; i < length; i++) {
+            correct = 0.0f;
+            if (i == currentLabel){
+                correct = 1.0f;
+            }
+            cost[i] = (float) ((Math.pow((activations[i] - correct),2))/2);
+        }
+        return cost;
+    }

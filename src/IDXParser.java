@@ -5,6 +5,8 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.List;
 
 public class IDXParser implements Parseable {
     //imageFilePath = "t10k-images.idx3-ubyte" by default
@@ -17,7 +19,10 @@ public class IDXParser implements Parseable {
         labelFile = Paths.get(labelFilePath);
     }
 
-    public void parse(){
+
+    // TODO generify the method make it so that the first 4 bytes of a file (First flag) define what type is called
+    public List<Image> parse(){
+        List<Image> toReturn = new ArrayList<>();
         Flags flags = getFlags();
         try (FileChannel imageChannel = FileChannel.open(imageFile, StandardOpenOption.READ);
              FileChannel labelChannel = FileChannel.open(labelFile, StandardOpenOption.READ)) {
@@ -26,7 +31,6 @@ public class IDXParser implements Parseable {
 
             ByteBuffer pixelBuffer = ByteBuffer.allocateDirect(flags.sizeX* flags.sizeY);
             ByteBuffer labelBuffer = ByteBuffer.allocateDirect(1);
-
 
             for (int i = 0; i < flags.imageCount; i++){
 
@@ -45,22 +49,23 @@ public class IDXParser implements Parseable {
                 }
                 labelBuffer.flip();
                 byte label = labelBuffer.get();
-
                 //potentially passed onto a shared resource idk yet
                 Image image = new Image(pixelVector, label);
+                toReturn.add(image);
 
                 imagePosition += imageBytesRead;
                 labelposition += labelBytesRead;
                 pixelBuffer.clear();
                 labelBuffer.clear();
             }
-            System.out.println("done " + "");
+            System.out.println("done ");
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
 
         }
+        return toReturn;
     }
 
     private Flags getFlags(){
@@ -76,15 +81,8 @@ public class IDXParser implements Parseable {
             throw new RuntimeException(e);
         }
     }
-    private static class Flags {
-        private final int sizeX;
-        private final int sizeY;
-        private final int imageCount;
-        private Flags(int sizeX, int sizeY, int imageCount) {
-            this.sizeX = sizeX;
-            this.sizeY = sizeY;
-            this.imageCount = imageCount;
-        }
+
+    private record Flags(int sizeX, int sizeY, int imageCount) {
     }
     private byte[] newArray(ByteBuffer buffer){
         buffer.flip();

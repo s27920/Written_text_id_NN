@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 public class Image {
     private final byte[] pixelVector;
     private final byte label;
@@ -5,6 +7,7 @@ public class Image {
     public Image(byte[] pixelVector, byte label) {
         this.pixelVector = pixelVector;
         this.label = label;
+
     }
 
     public byte[] getPixels() {
@@ -14,22 +17,19 @@ public class Image {
     public byte getNumVal() {
         return label;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < pixelVector.length; i++) {
+            stringBuilder.append(pixelVector[i]);
+            if ((i+1)%28==0){
+                stringBuilder.append("\n");
+            }
+        }
+        stringBuilder.append("\nlabel: ").append(label);
+        return String.valueOf(stringBuilder);
+    }
 }
 
-//public class Image<T> {
-//    private final T[] pixelVector;
-//    private final T label;
-//
-//    public Image(T[] pixelVector, T label) {
-//        this.pixelVector = pixelVector;
-//        this.label = label;
-//    }
-//
-//    public T[] getPixels() {
-//        return pixelVector;
-//    }
-//
-//    public T getNumVal() {
-//        return label;
-//    }
-//}
+

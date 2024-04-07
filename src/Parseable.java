@@ -1,3 +1,5 @@
-public interface Parseable {
-    void parse();
+import java.util.List;
+
+public interface Parseable<T> {
+    List<T> parse();
 }
