@@ -34,10 +34,10 @@ public class Network {
         Perceptron tmp = initLayer[0];
         Perceptron[] successors = null;
         Perceptron[] tmpSuccessors;
-        while ((tmpSuccessors = tmp.getSuccessor()) !=null){
+        while ((tmpSuccessors = tmp.getSuccessors()) !=null){
             tmp = tmpSuccessors[0];
-            for (Perceptron tmpSuccessor : tmpSuccessors) {
-                tmpSuccessor.getOutsideInputs();
+            for (int i = 0; i < tmpSuccessors.length; i++) {
+                tmpSuccessors[i].getOutsideInputs();
             }
             successors = tmpSuccessors;
         }
@@ -49,18 +49,19 @@ public class Network {
         return activations;
     }
     public void train(float[] activations){
-        int depthCounter=2;
+        int depthCounter=1;
         float[] correct = new float[10];
         correct[currentLabel] = 1.0f;
 
         Perceptron[] currLayer = terminalLayer;
-        Perceptron[] prevLayer;
+//        Perceptron[] predLayer = terminalLayer[0].getPredecessors();
 
         float[] sucErrorGradient = null;
 
-        while ((prevLayer = currLayer[0].predecessor)!=null){
+        while (currLayer !=null){
             int currentLength = currLayer.length;
             if(currLayer == terminalLayer){
+
                 sucErrorGradient = new float[currentLength];
                 for (int i = 0; i < currentLength; i++) {
                     float[] tmpWeights = currLayer[i].getWeights();
@@ -74,9 +75,10 @@ public class Network {
                     }
                     currLayer[i].setWeights(tmpWeights);
                 }
+                System.out.print("Depth: " + depthCounter +" gradient vector length: " + sucErrorGradient.length + " Gradient vector: " + Arrays.toString(sucErrorGradient));
             }else{
                 System.out.print("Depth: " + depthCounter +" gradient: ");
-                Perceptron[] sucLayer = currLayer[0].successor;
+                Perceptron[] sucLayer = currLayer[0].getSuccessors();
                 float[] tmpErrorGradient = new float[currentLength];
                 for (int i = 0; i < currentLength; i++) {
                     for (int j = 0; j < sucLayer.length; j++) {
@@ -89,7 +91,7 @@ public class Network {
                     }
                 }
 
-                System.out.println(Arrays.toString(sucErrorGradient));
+                System.out.println("gradient vector size: " + tmpErrorGradient.length + " gradient vector " + Arrays.toString(tmpErrorGradient));
                 for (int i = 0; i < currentLength; i++) {
                     float[] weights = currLayer[i].getWeights();
                     for (int j = 0; j < weights.length; j++) {
@@ -100,9 +102,7 @@ public class Network {
                 sucErrorGradient = tmpErrorGradient.clone();
                 depthCounter++;
                 }
-
-
-            currLayer=prevLayer;
+            currLayer=currLayer[0].getPredecessors();
 
         }
         System.out.println();
@@ -117,7 +117,7 @@ public class Network {
         Perceptron[] initLayer = new Perceptron[intiLayerSize];
         for (int i = 0; i < intiLayerSize; i++) {
             Perceptron perceptron = new Perceptron(1);
-            perceptron.successor = new Perceptron[structure[1]];
+            perceptron.setSuccessors(new Perceptron[structure[1]]);
             initLayer[i] = perceptron;
         }
         Perceptron[] terminalLayer = hiddenLayers(structure, initLayer, 1);
@@ -130,8 +130,8 @@ public class Network {
         int previousLayerSize = previousLayer.length;
         for (int i = 0; i < currLayerSize; i++) {
             Perceptron perceptron = new Perceptron(previousLayerSize);
-            perceptron.predecessor = new Perceptron[previousLayerSize];
-            perceptron.successor = new Perceptron[structure[index+1]];
+            perceptron.setPredecessors(new Perceptron[previousLayerSize]);
+            perceptron.setSuccessors(new Perceptron[structure[index+1]]);
             for (Perceptron predecessor : previousLayer) {
                 Perceptron.setPredConnection(predecessor, perceptron);
             }
@@ -149,12 +149,13 @@ public class Network {
         int previousLayerSize = previousLayer.length;
         for (int i = 0; i < currLayerSize; i++) {
             Perceptron perceptron = new Perceptron(previousLayerSize);
-            perceptron.predecessor = new Perceptron[previousLayerSize];
+            perceptron.setPredecessors(new Perceptron[previousLayerSize]);
             for (Perceptron predecessor : previousLayer) {
                 Perceptron.setPredConnection(predecessor, perceptron);
             }
             finalLayer[i] = perceptron;
         }
+        System.out.println("construction successful");
         return finalLayer;
     }
 }

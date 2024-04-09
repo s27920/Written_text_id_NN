@@ -1,3 +1,4 @@
+import java.util.Calendar;
 import java.util.List;
 
 public class Main {
@@ -10,6 +11,8 @@ public class Main {
         IDXParser parser = new IDXParser(imageFilePath10k, labelFilePath10k);
         Network network = new Network(new int[]{784,16,16,10});
 
+        long init = System.nanoTime();
+        System.out.println(init);
         List<Image> imageList = parser.parse();
 
         System.out.println("testing begins: ");
@@ -17,6 +20,9 @@ public class Main {
         System.out.println("Connection count: " + Perceptron.connectionCounter);
 
         System.out.println((network.run(imageList, 0)));
+        long end = System.nanoTime();
 
+
+        System.out.println("time: "+(end - init)/1_000_000_000.0);
     }
 }

@@ -1,4 +1,3 @@
-import java.util.Arrays;
 import java.util.Random;
 
 public class Perceptron {
@@ -7,10 +6,10 @@ public class Perceptron {
 
     private float[] inputs;
     private float[] weights;
-    Perceptron[] predecessor = null;
-    Perceptron[] successor = null;
-    int predIndex;
-    int sucIndex;
+    private Perceptron[] predecessors = null;
+    private Perceptron[] successors = null;
+    private int predIndex;
+    private int sucIndex;
 
     Perceptron(int inputsSize) {
         Random random = new Random();
@@ -26,8 +25,8 @@ public class Perceptron {
 
     public void getOutsideInputs() {
             float[] outputs = new float[inputs.length];
-            for (int i = 0; i < predecessor.length; i++) {
-                outputs[i] = predecessor[i].getOutput()*weights[i];
+            for (int i = 0; i < predecessors.length; i++) {
+                outputs[i] = predecessors[i].getOutput()*weights[i];
             }
             this.inputs = outputs;
     }
@@ -43,14 +42,27 @@ public class Perceptron {
     }
 
     public static void setPredConnection(Perceptron pred, Perceptron curr){
-        pred.successor[pred.sucIndex] = curr;
-        curr.predecessor[curr.predIndex] = pred;
+        pred.successors[pred.sucIndex] = curr;
+        curr.predecessors[curr.predIndex] = pred;
         pred.sucIndex++;
         curr.predIndex++;
         connectionCounter++;
     }
-    public float[] getInputs() {
-        return inputs;
+
+    public Perceptron[] getPredecessors() {
+        return predecessors;
+    }
+
+    public void setPredecessors(Perceptron[] predecessors) {
+        this.predecessors = predecessors;
+    }
+
+    public Perceptron[] successor() {
+        return successors;
+    }
+
+    public void setSuccessors(Perceptron[] successors) {
+        this.successors = successors;
     }
 
     public float[] getWeights() {
@@ -59,12 +71,10 @@ public class Perceptron {
     public void setInputs(float[] inputs) {
         this.inputs = inputs;
     }
-
     public void setWeights(float[] weights) {
         this.weights = weights;
     }
-
-    public Perceptron[] getSuccessor() {
-        return successor;
+    public Perceptron[] getSuccessors() {
+        return successors;
     }
 }
