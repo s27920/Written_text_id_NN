@@ -36,8 +36,8 @@ public class Network {
         Perceptron[] tmpSuccessors;
         while ((tmpSuccessors = tmp.getSuccessor()) !=null){
             tmp = tmpSuccessors[0];
-            for (int i = 0; i < tmpSuccessors.length; i++) {
-                tmpSuccessors[i].getOutsideInputs();
+            for (Perceptron tmpSuccessor : tmpSuccessors) {
+                tmpSuccessor.getOutsideInputs();
             }
             successors = tmpSuccessors;
         }
@@ -49,6 +49,7 @@ public class Network {
         return activations;
     }
     public void train(float[] activations){
+        int depthCounter=2;
         float[] correct = new float[10];
         correct[currentLabel] = 1.0f;
 
@@ -74,19 +75,21 @@ public class Network {
                     currLayer[i].setWeights(tmpWeights);
                 }
             }else{
+                System.out.print("Depth: " + depthCounter +" gradient: ");
                 Perceptron[] sucLayer = currLayer[0].successor;
                 float[] tmpErrorGradient = new float[currentLength];
                 for (int i = 0; i < currentLength; i++) {
                     for (int j = 0; j < sucLayer.length; j++) {
                         float[] sucWeights = sucLayer[j].getWeights();
                         for (int k = 0; k < currentLength; k++) {
-//                            System.out.println("error gradient: "+ sucErrorGradient[j]);
-//                            System.out.println("weight: " + sucWeights[k]);
-                            tmpErrorGradient[i] += sucErrorGradient[j] * sucWeights[k];
+                            if (i == k){
+                                tmpErrorGradient[i] += sucErrorGradient[j] * sucWeights[k];
+                            }
                         }
-//                        System.out.println();
                     }
                 }
+
+                System.out.println(Arrays.toString(sucErrorGradient));
                 for (int i = 0; i < currentLength; i++) {
                     float[] weights = currLayer[i].getWeights();
                     for (int j = 0; j < weights.length; j++) {
@@ -95,10 +98,14 @@ public class Network {
                     currLayer[i].setWeights(weights);
                 }
                 sucErrorGradient = tmpErrorGradient.clone();
-
+                depthCounter++;
                 }
+
+
             currLayer=prevLayer;
+
         }
+        System.out.println();
     }
 
     public int classify(float[] activations){
