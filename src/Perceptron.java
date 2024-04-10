@@ -3,7 +3,6 @@ import java.util.Random;
 public class Perceptron {
     static int objectCounter = 0;
     static int connectionCounter = 0;
-
     private float[] inputs;
     private float[] weights;
     private Perceptron[] predecessors = null;

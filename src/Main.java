@@ -1,6 +1,3 @@
-import java.util.Calendar;
-import java.util.List;
-
 public class Main {
     public static void main(String[] args) {
         String imageFilePath10k = "t10k-images.idx3-ubyte"; //by default
@@ -13,13 +10,13 @@ public class Main {
 
         long init = System.nanoTime();
         System.out.println(init);
-        List<Image> imageList = parser.parse();
+        Image[] images = parser.parse();
 
         System.out.println("testing begins: ");
         System.out.println("Perceptron count: " + Perceptron.objectCounter);
         System.out.println("Connection count: " + Perceptron.connectionCounter);
 
-        System.out.println((network.run(imageList, 0)));
+        System.out.println((network.run(images, 0)));
         long end = System.nanoTime();
 
 

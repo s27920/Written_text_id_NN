@@ -2,22 +2,19 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Network {
-    int[] structure;
-//    by default = {784,16,16,10}
-    Perceptron[] initLayer;
-    Perceptron[] terminalLayer;
-    byte currentLabel;
+    private Perceptron[] initLayer;
+    private Perceptron[] terminalLayer;
+    private byte currentLabel;
 
     public Network(int[] structure) {
-        this.structure = structure;
         Perceptron[][] layers = createNetwork(structure);
         this.initLayer = layers[0];
         this.terminalLayer = layers[1];
     }
-    public int run(List<Image> imagesToClassify, int index){
-        int length = imagesToClassify.size();
+    public int run(Image[] imagesToClassify, int index){
+        int length = imagesToClassify.length;
         while (index < length){
-            float[] activations = getActivations(imagesToClassify.get(index));
+            float[] activations = getActivations(imagesToClassify[index]);
             train(activations);
             System.out.println("value guessed: " + classify(activations) + " actual value: " + currentLabel + " for activations ");
             System.out.println(Arrays.toString(activations));
@@ -54,14 +51,11 @@ public class Network {
         correct[currentLabel] = 1.0f;
 
         Perceptron[] currLayer = terminalLayer;
-//        Perceptron[] predLayer = terminalLayer[0].getPredecessors();
-
         float[] sucErrorGradient = null;
 
         while (currLayer !=null){
             int currentLength = currLayer.length;
             if(currLayer == terminalLayer){
-
                 sucErrorGradient = new float[currentLength];
                 for (int i = 0; i < currentLength; i++) {
                     float[] tmpWeights = currLayer[i].getWeights();
@@ -77,7 +71,6 @@ public class Network {
                 }
                 System.out.print("Depth: " + depthCounter +" gradient vector length: " + sucErrorGradient.length + " Gradient vector: " + Arrays.toString(sucErrorGradient));
             }else{
-                System.out.print("Depth: " + depthCounter +" gradient: ");
                 Perceptron[] sucLayer = currLayer[0].getSuccessors();
                 float[] tmpErrorGradient = new float[currentLength];
                 for (int i = 0; i < currentLength; i++) {
@@ -91,17 +84,17 @@ public class Network {
                     }
                 }
 
-                System.out.println("gradient vector size: " + tmpErrorGradient.length + " gradient vector " + Arrays.toString(tmpErrorGradient));
+                System.out.println("Depth: " + depthCounter + "gradient vector size: " + tmpErrorGradient.length + " gradient vector " + Arrays.toString(tmpErrorGradient));
                 for (int i = 0; i < currentLength; i++) {
                     float[] weights = currLayer[i].getWeights();
                     for (int j = 0; j < weights.length; j++) {
-                        weights[j] += tmpErrorGradient[i];
+                        weights[j] += tmpErrorGradient[i] /** currLayer[i].getOutput()*/;
                     }
                     currLayer[i].setWeights(weights);
                 }
                 sucErrorGradient = tmpErrorGradient.clone();
-                depthCounter++;
                 }
+            depthCounter++;
             currLayer=currLayer[0].getPredecessors();
 
         }

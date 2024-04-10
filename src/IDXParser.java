@@ -5,14 +5,11 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class IDXParser implements Parseable {
 
-    Path imageFile;
-    Path labelFile;
+    private Path imageFile;
+    private Path labelFile;
 
     public IDXParser(String imageFilePath, String labelFilePath) {
         imageFile = Paths.get(imageFilePath);
@@ -21,10 +18,10 @@ public class IDXParser implements Parseable {
 
 
     // TODO generify the method make it so that the first 4 bytes of a file (First flag) define what type is called
-    public List<Image> parse(){
-        List<Image> toReturn = new ArrayList<>();
+    public Image[] parse(){
+//        List<Image> toReturn = new ArrayList<>();
         Flags flags = getFlags();
-
+        Image[] toReturn = new Image[flags.imageCount];
         try (FileChannel imageChannel = FileChannel.open(imageFile, StandardOpenOption.READ);
              FileChannel labelChannel = FileChannel.open(labelFile, StandardOpenOption.READ)) {
             long imagePosition = 16;
@@ -51,7 +48,7 @@ public class IDXParser implements Parseable {
                 labelBuffer.flip();
                 byte label = labelBuffer.get();
                 Image image = new Image(pixelVector, label);
-                toReturn.add(image);
+                toReturn[i] = image;
 
                 imagePosition += imageBytesRead;
                 labelposition += labelBytesRead;
