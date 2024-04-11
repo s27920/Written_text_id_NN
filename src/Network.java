@@ -1,26 +1,34 @@
-import java.util.Arrays;
-import java.util.List;
-
 public class Network {
     private Perceptron[] initLayer;
     private Perceptron[] terminalLayer;
+    private final float learningRate = 0.1f;
     private byte currentLabel;
-
     public Network(int[] structure) {
         Perceptron[][] layers = createNetwork(structure);
         this.initLayer = layers[0];
         this.terminalLayer = layers[1];
     }
-    public int run(Image[] imagesToClassify, int index){
-        int length = imagesToClassify.length;
-        while (index < length){
+    public void train(Image[] imagesToClassify, int index){
+        long start = System.nanoTime();
+        System.out.println("training network.\nPlease wait...");
+        int total = 0;
+        int correct = 0;
+        while (index < imagesToClassify.length){
             float[] activations = getActivations(imagesToClassify[index]);
-            train(activations);
-            System.out.println("value guessed: " + classify(activations) + " actual value: " + currentLabel + " for activations ");
-            System.out.println(Arrays.toString(activations));
+            if (classify(activations) == currentLabel){
+                correct++;
+            }
+            total++;
+            backProp();
             index+=1;
         }
-        return index;
+        System.out.println("training time: " + (System.nanoTime()-start));
+        System.out.println("correct: " + correct);
+        System.out.println("total: " + total);
+        System.out.println("accuracy: " + ((double) correct)/ ((double) total) +"%");
+        for (int i = 0; i < 20; i++) {
+            train(imagesToClassify, 0);
+        }
     }
 
     public float[] getActivations(Image imageToClassify){
@@ -45,60 +53,51 @@ public class Network {
         currentLabel = imageToClassify.getNumVal();
         return activations;
     }
-    public void train(float[] activations){
-        int depthCounter=1;
+
+    public void backProp(){
         float[] correct = new float[10];
         correct[currentLabel] = 1.0f;
 
         Perceptron[] currLayer = terminalLayer;
-        float[] sucErrorGradient = null;
+        float[] sucErrorGradient = new float[currLayer.length];
 
-        while (currLayer !=null){
-            int currentLength = currLayer.length;
-            if(currLayer == terminalLayer){
-                sucErrorGradient = new float[currentLength];
-                for (int i = 0; i < currentLength; i++) {
-                    float[] tmpWeights = currLayer[i].getWeights();
-                    float activation = activations[i];
-                    float errorGradient = (correct[i] - activation);
-                    float output = currLayer[i].getOutput();
-                    float change = activation * errorGradient * ((2 / (1 + (output * output))) - 1);
-                    sucErrorGradient[i] = change;
-                    for (int j = 0; j < currentLength; j++) {
-                        tmpWeights[j]+=change;
-                    }
-                    currLayer[i].setWeights(tmpWeights);
-                }
-                System.out.print("Depth: " + depthCounter +" gradient vector length: " + sucErrorGradient.length + " Gradient vector: " + Arrays.toString(sucErrorGradient));
-            }else{
-                Perceptron[] sucLayer = currLayer[0].getSuccessors();
-                float[] tmpErrorGradient = new float[currentLength];
-                for (int i = 0; i < currentLength; i++) {
-                    for (int j = 0; j < sucLayer.length; j++) {
-                        float[] sucWeights = sucLayer[j].getWeights();
-                        for (int k = 0; k < currentLength; k++) {
-                            if (i == k){
-                                tmpErrorGradient[i] += sucErrorGradient[j] * sucWeights[k];
-                            }
+        for (int i = 0; i < currLayer.length; i++) {
+            float[] weights = currLayer[i].getWeights();
+            float[] inputs = currLayer[i].getInputs();
+            float error = (correct[i] - currLayer[i].getOutput());
+            float output = currLayer[i].getOutput();
+            float errorGradient = (error * (1-output*output));
+            for (int j = 0; j < weights.length; j++) {
+                weights[j] += learningRate * errorGradient * inputs[j];
+            }
+            sucErrorGradient[i] = errorGradient;
+        }
+        currLayer = currLayer[0].getPredecessors();
+        while (currLayer != null){
+            Perceptron[] sucLayer = currLayer[0].getSuccessors();
+
+            float[] tmpErrorGradient = new float[currLayer.length];
+            for (int i = 0; i < currLayer.length; i++) {
+                float errorGradient = 0.0f;
+                for (int j = 0; j < sucLayer.length; j++) {
+                    float[] weights = sucLayer[j].getWeights();
+                    for (int k = 0; k < weights.length; k++) {
+                        if (i == k){
+                            errorGradient += sucErrorGradient[j] * weights[k];
                         }
                     }
                 }
-
-                System.out.println("Depth: " + depthCounter + "gradient vector size: " + tmpErrorGradient.length + " gradient vector " + Arrays.toString(tmpErrorGradient));
-                for (int i = 0; i < currentLength; i++) {
-                    float[] weights = currLayer[i].getWeights();
-                    for (int j = 0; j < weights.length; j++) {
-                        weights[j] += tmpErrorGradient[i] /** currLayer[i].getOutput()*/;
-                    }
-                    currLayer[i].setWeights(weights);
+                float[] inputs = currLayer[i].getInputs();
+                float[] weights = currLayer[i].getWeights();
+                float output = currLayer[i].getOutput();
+                for (int j = 0; j < weights.length; j++) {
+                    weights[j] += learningRate * (1-output*output) * errorGradient * inputs[j];
                 }
-                sucErrorGradient = tmpErrorGradient.clone();
-                }
-            depthCounter++;
-            currLayer=currLayer[0].getPredecessors();
-
+                tmpErrorGradient[i] = errorGradient;
+            }
+            sucErrorGradient = tmpErrorGradient;
+            currLayer = currLayer[0].getPredecessors();
         }
-        System.out.println();
     }
 
     public int classify(float[] activations){

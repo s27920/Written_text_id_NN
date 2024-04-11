@@ -30,8 +30,6 @@ public class Perceptron {
             this.inputs = outputs;
     }
 
-
-
     float getOutput(){
         float sum = 0.0f;
         for (int i = 0; i < inputs.length; i++) {
@@ -56,10 +54,6 @@ public class Perceptron {
         this.predecessors = predecessors;
     }
 
-    public Perceptron[] successor() {
-        return successors;
-    }
-
     public void setSuccessors(Perceptron[] successors) {
         this.successors = successors;
     }
@@ -75,5 +69,9 @@ public class Perceptron {
     }
     public Perceptron[] getSuccessors() {
         return successors;
+    }
+
+    public float[] getInputs() {
+        return inputs;
     }
 }

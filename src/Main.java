@@ -5,8 +5,8 @@ public class Main {
         String imageFilePath60k = "train-images.idx3-ubyte";
         String labelFilePath60k = "train-labels.idx1-ubyte";
 
-        IDXParser parser = new IDXParser(imageFilePath10k, labelFilePath10k);
-        Network network = new Network(new int[]{784,16,16,10});
+        IDXParser parser = new IDXParser(imageFilePath60k, labelFilePath60k);
+        Network network = new Network(new int[]{784,48,16,10});
 
         long init = System.nanoTime();
         System.out.println(init);
@@ -16,7 +16,7 @@ public class Main {
         System.out.println("Perceptron count: " + Perceptron.objectCounter);
         System.out.println("Connection count: " + Perceptron.connectionCounter);
 
-        System.out.println((network.run(images, 0)));
+        network.train(images, 0);
         long end = System.nanoTime();
 
 
