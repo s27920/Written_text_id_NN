@@ -6,13 +6,12 @@ public class Main {
         String labelFilePath60k = "train-labels.idx1-ubyte";
 
         IDXParser parser = new IDXParser(imageFilePath60k, labelFilePath60k);
-        Network network = new Network(new int[]{784,48,16,10});
+        Network network = new Network(new int[]{784,256,128,10});
 
         long init = System.nanoTime();
         System.out.println(init);
         Image[] images = parser.parse();
 
-        System.out.println("testing begins: ");
         System.out.println("Perceptron count: " + Perceptron.objectCounter);
         System.out.println("Connection count: " + Perceptron.connectionCounter);
 

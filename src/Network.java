@@ -22,7 +22,7 @@ public class Network {
             backProp();
             index+=1;
         }
-        System.out.println("training time: " + (System.nanoTime()-start));
+        System.out.println(( ("training time: " + ((int)(System.nanoTime() - start) / 1_000_000_000))) + " seconds");
         System.out.println("correct: " + correct);
         System.out.println("total: " + total);
         System.out.println("accuracy: " + ((double) correct)/ ((double) total) +"%");
@@ -77,21 +77,24 @@ public class Network {
             Perceptron[] sucLayer = currLayer[0].getSuccessors();
 
             float[] tmpErrorGradient = new float[currLayer.length];
+            float[] weights;
+            float errorGradient;
             for (int i = 0; i < currLayer.length; i++) {
-                float errorGradient = 0.0f;
+                errorGradient = 0.0f;
                 for (int j = 0; j < sucLayer.length; j++) {
-                    float[] weights = sucLayer[j].getWeights();
+                    weights = sucLayer[j].getWeights();
                     for (int k = 0; k < weights.length; k++) {
                         if (i == k){
                             errorGradient += sucErrorGradient[j] * weights[k];
+                            break;
                         }
                     }
                 }
                 float[] inputs = currLayer[i].getInputs();
-                float[] weights = currLayer[i].getWeights();
+                float[] currWeights = currLayer[i].getWeights();
                 float output = currLayer[i].getOutput();
-                for (int j = 0; j < weights.length; j++) {
-                    weights[j] += learningRate * (1-output*output) * errorGradient * inputs[j];
+                for (int j = 0; j < currWeights.length; j++) {
+                    currWeights[j] += learningRate * (1-output*output) * errorGradient * inputs[j];
                 }
                 tmpErrorGradient[i] = errorGradient;
             }
