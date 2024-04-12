@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 public class Network {
     private Perceptron[] initLayer;
     private Perceptron[] terminalLayer;
@@ -37,23 +39,24 @@ public class Network {
     public float[] getActivations(Image imageToClassify){
         byte[] pixelVector = imageToClassify.getPixels();
         for (int i = 0; i < initLayer.length; i++) {
-            initLayer[i].setInputs(new float[]{(float) ((pixelVector[i] & 0xFF)/256.0)});
+            initLayer[i].setInputs(new float[]{(float) ((pixelVector[i] & 0xFF)/255.0)});
         }
         Perceptron[] currLayer = initLayer;
-        Perceptron[] successors  = currLayer[0].getSuccessors();
-        while (successors!=null){
-            for (Perceptron successor : successors) {
-                successor.getOutsideInputs();
+        for(;currLayer.length > 0; currLayer = currLayer[0].getSuccessors()){
+            for (Perceptron current : currLayer) {
+                current.getOutsideInputs();
             }
-            currLayer = successors;
-            successors = currLayer[0].getSuccessors();
+            if (currLayer[0].getSuccessors() == null) {
+                break;
+            }
         }
+
+        currentLabel = imageToClassify.getLabel();
         int currLength = currLayer.length;
         float []activations = new float[currLength];
         for (int i = 0; i < currLength; i++) {
             activations[i] = currLayer[i].getOutput();
         }
-        currentLabel = imageToClassify.getLabel();
         return activations;
     }
 
@@ -69,17 +72,15 @@ public class Network {
             float[] inputs = currLayer[i].getInputs();
             float error = (correct[i] - currLayer[i].getOutput());
             float output = currLayer[i].getOutput();
-            float errorGradient = (error * (1-output*output));
+            float errorGradient = (error * ((1-output)*output));
             for (int j = 0; j < weights.length; j++) {
                 weights[j] += learningRate * errorGradient * inputs[j];
             }
             sucErrorGradient[i] = errorGradient;
         }
-
         currLayer = currLayer[0].getPredecessors();
         while (currLayer != null){
             Perceptron[] sucLayer = currLayer[0].getSuccessors();
-
             float[] tmpErrorGradient = new float[currLayer.length];
             for (int i = 0; i < currLayer.length; i++) {
                 float errorGradient = 0.0f;
@@ -95,7 +96,7 @@ public class Network {
                 float[] weights = currLayer[i].getWeights();
                 float output = currLayer[i].getOutput();
                 for (int j = 0; j < weights.length; j++) {
-                    weights[j] += learningRate * (1-output*output) * errorGradient * inputs[j];
+                    weights[j] += learningRate * ((1-output)*output) * errorGradient * inputs[j];
                 }
                 tmpErrorGradient[i] = errorGradient;
             }
@@ -116,6 +117,7 @@ public class Network {
         for (int i = 0; i < intiLayerSize; i++) {
             initLayer[i] = new Perceptron(1);
             initLayer[i].setSuccessors(new Perceptron[structure[1]]);
+            initLayer[i].initWeights();
         }
         Perceptron[] terminalLayer = hiddenLayers(structure, initLayer);
 
@@ -132,6 +134,7 @@ public class Network {
                     perceptron.setSuccessors(new Perceptron[structure[i+1]]);
                 }
                 perceptron.twoWayLink(previousLayer);
+                perceptron.initWeights();
                 currLayer[j] = perceptron;
             }
             previousLayer = currLayer;
