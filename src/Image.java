@@ -12,7 +12,7 @@ public class Image {
         return pixelVector;
     }
 
-    public byte getNumVal() {
+    public byte getLabel() {
         return label;
     }
 
@@ -20,7 +20,7 @@ public class Image {
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < pixelVector.length; i++) {
-            stringBuilder.append(pixelVector[i]);
+            stringBuilder.append(pixelVector[i] & 0xFF).append(" ");
             if ((i+1)%28==0){
                 stringBuilder.append("\n");
             }

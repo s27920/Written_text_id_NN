@@ -96,3 +96,38 @@ float[] getESquared(float[] activations){
                 layer=prevLayer;
             }
         }
+
+
+
+int currLayerSize = structure[index];
+        Perceptron[] currLayer = new Perceptron[currLayerSize];
+        int previousLayerSize = previousLayer.length;
+        for (int i = 0; i < currLayerSize; i++) {
+            Perceptron perceptron = new Perceptron(previousLayerSize);
+            perceptron.setPredecessors(new Perceptron[previousLayerSize]);
+            perceptron.setSuccessors(new Perceptron[structure[index+1]]);
+            for (Perceptron predecessor : previousLayer) {
+                Perceptron.setPredConnection(predecessor, perceptron);
+            }
+            currLayer[i] = perceptron;
+        }
+        if(index < structure.length-2){
+            return hiddenLayers(structure, currLayer, index+1);
+        }else {
+            return terminalLayer(structure, currLayer, index+1);
+        }
+
+        private Perceptron[] terminalLayer(int[] structure, Perceptron[] previousLayer, int index){
+                int currLayerSize = structure[index];
+                Perceptron[] finalLayer = new Perceptron[currLayerSize];
+                int previousLayerSize = previousLayer.length;
+                for (int i = 0; i < currLayerSize; i++) {
+                    Perceptron perceptron = new Perceptron(previousLayerSize);
+                    perceptron.setPredecessors(new Perceptron[previousLayerSize]);
+                    for (Perceptron predecessor : previousLayer) {
+                        Perceptron.setPredConnection(predecessor, perceptron);
+                    }
+                    finalLayer[i] = perceptron;
+                }
+                return finalLayer;
+            }

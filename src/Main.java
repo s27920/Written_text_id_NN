@@ -13,7 +13,7 @@ public class Main {
         Image[] images = parser.parse();
 
         System.out.println("Perceptron count: " + Perceptron.objectCounter);
-        System.out.println("Connection count: " + Perceptron.connectionCounter);
+        System.out.println("Connection count: " + Network.connectionCounter);
 
         network.train(images, 0);
         long end = System.nanoTime();
