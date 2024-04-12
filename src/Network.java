@@ -1,6 +1,7 @@
 public class Network {
     private Perceptron[] initLayer;
-    private Perceptron[] terminalLayer;
+    //remember to change later this is for JNI testing
+    public Perceptron[] terminalLayer;
     private final float learningRate = 0.1f;
     private byte currentLabel;
     public Network(int[] structure) {
@@ -54,7 +55,15 @@ public class Network {
         return activations;
     }
 
-    public void backProp(){
+    public static void main(String[] args) {
+        System.loadLibrary("Number_id_NN");
+        Network network = new Network(new int[]{5,3,3});
+        Perceptron[] perceptron = network.terminalLayer[0].getPredecessors();
+        modWeights(perceptron, new float[]{0.3f, 0.3f, 0.3f});
+    }
+    native public static void modWeights(Perceptron[] perceptrons, float[] prevGradient);
+
+    private void backProp(){
         float[] correct = new float[10];
         correct[currentLabel] = 1.0f;
 
@@ -75,7 +84,6 @@ public class Network {
         currLayer = currLayer[0].getPredecessors();
         while (currLayer != null){
             Perceptron[] sucLayer = currLayer[0].getSuccessors();
-
             float[] tmpErrorGradient = new float[currLayer.length];
             float[] weights;
             float errorGradient;

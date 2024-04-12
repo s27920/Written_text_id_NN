@@ -64,9 +64,6 @@ public class Perceptron {
     public void setInputs(float[] inputs) {
         this.inputs = inputs;
     }
-    public void setWeights(float[] weights) {
-        this.weights = weights;
-    }
     public Perceptron[] getSuccessors() {
         return successors;
     }
